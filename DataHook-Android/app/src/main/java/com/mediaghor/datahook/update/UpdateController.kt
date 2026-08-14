@@ -23,9 +23,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  *   appears only if/when the backend says an update is needed.
  * - Every failure (timeout, HTTP error, malformed JSON, no network) is
  *   swallowed: the app simply continues without any update UI.
+ *
+ * The installed [currentVersionCode] is compared against the backend's
+ * `new_version_code`, so users who already updated are never prompted again.
  */
 class UpdateController(
     private val repository: UpdateRepository,
+    private val currentVersionCode: Int,
 ) {
 
     private val started = AtomicBoolean(false)
@@ -39,7 +43,7 @@ class UpdateController(
         if (!started.compareAndSet(false, true)) return
         scope.launch {
             val config = repository.fetch().getOrNull() ?: return@launch
-            val prompt = decideUpdate(config)
+            val prompt = decideUpdate(config, currentVersionCode)
             if (prompt != null) _state.value = prompt
         }
     }

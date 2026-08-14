@@ -88,5 +88,8 @@ class AppContainer(context: Context) {
 
     val authRepository = AuthRepository(api, tokenManager)
     val endpointRepository = EndpointRepository(api)
-    val updateController = UpdateController(repository = UpdateRepository(updateApi))
+    val updateController = UpdateController(
+        repository = UpdateRepository(updateApi),
+        currentVersionCode = BuildConfig.VERSION_CODE,
+    )
 }

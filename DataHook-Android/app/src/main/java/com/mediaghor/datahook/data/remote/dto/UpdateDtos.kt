@@ -18,6 +18,12 @@ data class AppUpdateConfig(
     @SerialName("current_version") val currentVersion: String = "",
     /** Display-only free text (e.g. "3.89") shown in the dialog when set. */
     @SerialName("new_version") val newVersion: String = "",
+    /**
+     * versionCode (build number) this update points to. The installed app
+     * is gated against it: installed < this → prompt, installed >= this →
+     * never prompt (users who already updated see nothing). 0 = never.
+     */
+    @SerialName("new_version_code") val newVersionCode: Int = 0,
     val message: String = "",
     @SerialName("play_store_url") val playStoreUrl: String = "",
 )
