@@ -14,8 +14,10 @@ data class AppUpdateConfig(
     val enabled: Boolean = false,
     /** 0 = no update, 1 = optional, 2 = mandatory. Anything else = no update. */
     val mode: Int = 0,
-    @SerialName("latest_version") val latestVersion: Int = 0,
-    @SerialName("minimum_version") val minimumVersion: Int = 0,
+    /** Display-only free text (e.g. "2.4"); never used for gating. */
+    @SerialName("current_version") val currentVersion: String = "",
+    /** Display-only free text (e.g. "3.89") shown in the dialog when set. */
+    @SerialName("new_version") val newVersion: String = "",
     val message: String = "",
     @SerialName("play_store_url") val playStoreUrl: String = "",
 )

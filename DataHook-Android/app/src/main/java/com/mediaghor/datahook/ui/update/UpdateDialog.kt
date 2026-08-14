@@ -82,6 +82,20 @@ fun UpdateDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
+                prompt.config.newVersion.takeIf { it.isNotBlank() }?.let { newVersion ->
+                    Spacer(Modifier.height(12.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(50),
+                    ) {
+                        Text(
+                            text = "New version: $newVersion",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+                        )
+                    }
+                }
                 Spacer(Modifier.height(26.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),

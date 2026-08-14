@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class UpdateController(
     private val repository: UpdateRepository,
-    private val currentVersionCode: Int,
 ) {
 
     private val started = AtomicBoolean(false)
@@ -40,7 +39,7 @@ class UpdateController(
         if (!started.compareAndSet(false, true)) return
         scope.launch {
             val config = repository.fetch().getOrNull() ?: return@launch
-            val prompt = decideUpdate(config, currentVersionCode)
+            val prompt = decideUpdate(config)
             if (prompt != null) _state.value = prompt
         }
     }

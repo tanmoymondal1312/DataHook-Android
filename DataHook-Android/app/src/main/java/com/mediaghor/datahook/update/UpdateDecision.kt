@@ -3,25 +3,18 @@ package com.mediaghor.datahook.update
 import com.mediaghor.datahook.data.remote.dto.AppUpdateConfig
 
 /**
- * Version-based update decision, shared between the controller and tests.
+ * Update decision, driven purely by the backend `enabled` + `mode` fields —
+ * the version strings are display-only and never gate the prompt.
  *
- *   mode 0 (or disabled / unknown mode) → nothing
- *   mode 1 (optional) → prompt when current < latest_version
- *   mode 2 (mandatory) → prompt when current < minimum_version
+ *   disabled or mode 0 (or unknown mode) → nothing
+ *   mode 1 (optional) → prompt, user can skip
+ *   mode 2 (mandatory) → prompt, cannot be dismissed
  */
-fun decideUpdate(config: AppUpdateConfig, currentVersionCode: Int): UpdatePrompt? {
+fun decideUpdate(config: AppUpdateConfig): UpdatePrompt? {
     if (!config.enabled) return null
     return when (config.mode) {
-        1 -> if (currentVersionCode < config.latestVersion) {
-            UpdatePrompt(config, mandatory = false)
-        } else {
-            null
-        }
-        2 -> if (currentVersionCode < config.minimumVersion) {
-            UpdatePrompt(config, mandatory = true)
-        } else {
-            null
-        }
+        1 -> UpdatePrompt(config, mandatory = false)
+        2 -> UpdatePrompt(config, mandatory = true)
         else -> null
     }
 }
