@@ -1,6 +1,7 @@
 package com.mediaghor.datahook.fcm
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -94,6 +95,8 @@ class DataHookMessagingService : FirebaseMessagingService() {
         }.getOrNull()
     }
 
+    /** Lint can't trace the permission guard through [hasNotificationPermission]. */
+    @SuppressLint("MissingPermission")
     private fun showNotification(
         title: String,
         body: String,
