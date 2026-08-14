@@ -1,0 +1,10 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base theme. Compose (DataHookTheme) drives the real colors; this only
+         controls the cold-start window before Compose draws. -->
+    <style name="Theme.DataHook" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/dh_window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    </style>
+</resources>

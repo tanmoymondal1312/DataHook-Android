@@ -1,0 +1,92 @@
+{
+  "project_info": {
+    "project_number": "498244876990",
+    "project_id": "webhook-001",
+    "storage_bucket": "webhook-001.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498244876990:android:25e0900ba4f95fd4a13cef",
+        "android_client_info": {
+          "package_name": "com.mediaghor.datahook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498244876990-0d4ct29ujo6v65as3ljbs992gv56m9lb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mediaghor.datahook",
+            "certificate_hash": "06fd32f182d0f801d9cca0542a84eb12d29b40d4"
+          }
+        },
+        {
+          "client_id": "498244876990-pka5pch6o7402486lc9h6v4vam356ugm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mediaghor.datahook",
+            "certificate_hash": "357710bcb4b8dfeb1005389a84684ccbcda7f663"
+          }
+        },
+        {
+          "client_id": "498244876990-lj42pp8at7i8uhdjk4627ac7990i44vk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYuW-YPZHeEfwAwEwDtozXQgpa7glKUbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "498244876990-lj42pp8at7i8uhdjk4627ac7990i44vk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498244876990:android:7a05f5f80cc7ff67a13cef",
+        "android_client_info": {
+          "package_name": "com.mediaghor.webhook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498244876990-fgbbgnlfaktfdalqn2rjp0qkfnofbs8u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mediaghor.webhook",
+            "certificate_hash": "06fd32f182d0f801d9cca0542a84eb12d29b40d4"
+          }
+        },
+        {
+          "client_id": "498244876990-lj42pp8at7i8uhdjk4627ac7990i44vk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYuW-YPZHeEfwAwEwDtozXQgpa7glKUbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "498244876990-lj42pp8at7i8uhdjk4627ac7990i44vk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

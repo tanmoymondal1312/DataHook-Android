@@ -1,0 +1,16 @@
+.aider*
+
+# Firebase service-account key (secret) — never commit
+for-cloude/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Android build artifacts (signed bundles, decompiled releases)
+DataHook-Android/app/release/
+DataHook-Android/app/build/
+DataHook-Android/build/
+DataHook-Android/captures/
+DataHook-Android/.gradle/
