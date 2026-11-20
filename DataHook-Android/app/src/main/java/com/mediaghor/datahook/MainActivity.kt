@@ -8,17 +8,21 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mediaghor.datahook.data.local.AppPreferences
 import com.mediaghor.datahook.fcm.NotificationKeys
 import com.mediaghor.datahook.ui.navigation.DataHookRoot
 import com.mediaghor.datahook.ui.theme.DataHookTheme
@@ -31,8 +35,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Covers edge-to-edge + system-bar appearance on API 26–36; it also
+        // sets decorFitsSystemWindows(false), so no extra call is needed.
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         deepLinkEndpointId.value = intent.readEndpointId()
         deepLinkSubmissionPayload.value = intent.readSubmissionPayload()
@@ -40,7 +45,30 @@ class MainActivity : ComponentActivity() {
         val app = application as DataHookApp
 
         setContent {
-            DataHookTheme {
+            val appPreferences = app.container.appPreferences
+            val themeMode by appPreferences.themeMode
+                .collectAsStateWithLifecycle(initialValue = AppPreferences.MODE_SYSTEM)
+            val dynamicColor by appPreferences.dynamicColor
+                .collectAsStateWithLifecycle(initialValue = true)
+            val darkTheme = when (themeMode) {
+                AppPreferences.MODE_LIGHT -> false
+                AppPreferences.MODE_DARK -> true
+                else -> isSystemInDarkTheme()
+            }
+
+            // enableEdgeToEdge() follows the *system* dark-mode setting, but a
+            // forced Light/Dark app mode can differ from it — keep the
+            // status/nav bar icon contrast in sync with the theme that is
+            // actually on screen.
+            val view = LocalView.current
+            SideEffect {
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            }
+
+            DataHookTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = androidx.compose.material3.MaterialTheme.colorScheme.background,

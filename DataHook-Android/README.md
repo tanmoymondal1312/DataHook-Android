@@ -13,7 +13,7 @@ snippets, and see submissions (with push notifications) as external sites POST d
 - **Push:** Firebase Cloud Messaging
 - **Base URL:** `https://datahook.mediaghor.com/` (in `data/remote/ApiConfig.kt`)
 
-Package: `com.mediaghor.datahook` · minSdk 26 · targetSdk 35 · AGP 8.7.3 · Gradle 8.11.1.
+Package: `com.mediaghor.datahook` · minSdk 26 · targetSdk 36 · compileSdk 36 · AGP 8.9.1 · Gradle 8.14.4 · Kotlin 2.4.21.
 
 ---
 
@@ -55,8 +55,10 @@ That's it — no other configuration is required. The base URL is already set.
 
 ## 2. Build & run
 
-Open the project in Android Studio (it will use its bundled JDK), let it sync, then
-Run. Or from the terminal:
+Open the project in Android Studio, let it sync, then Run. The Gradle daemon is
+pinned to JDK 21 in `gradle.properties` (`org.gradle.java.home`), so the bundled
+Studio JBR works as the launcher — Gradle 8.x's script compiler cannot parse
+Java 25. Or from the terminal with any JDK 17–24 on `JAVA_HOME`:
 
 ```bash
 ./gradlew :app:assembleDebug      # build the debug APK

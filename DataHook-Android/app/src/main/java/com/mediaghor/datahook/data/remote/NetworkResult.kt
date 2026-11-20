@@ -34,7 +34,6 @@ class ApiException(
 /** Turns a `Response<Unit>` result into a plain `Result<Unit>`, failing on non-2xx. */
 fun Result<Response<Unit>>.unwrapUnit(): Result<Unit> = mapCatching { resp ->
     if (!resp.isSuccessful) throw ApiException("Request failed (${resp.code()}).", resp.code())
-    Unit
 }
 
 private val errorJson = Json { ignoreUnknownKeys = true; isLenient = true }
@@ -53,7 +52,6 @@ private fun HttpException.userMessage(): String {
                 is JsonObject -> firstMessage(el)
                 is JsonArray -> el.firstStringOrNull()
                 is JsonPrimitive -> el.contentOrNull()
-                else -> null
             }
         }.getOrNull()
     }

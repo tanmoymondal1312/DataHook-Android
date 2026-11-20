@@ -2,4 +2,5 @@
     <string name="app_name">DataHook</string>
     <string name="default_notification_channel_id">datahook_submissions</string>
     <string name="default_notification_channel_name">New submissions</string>
+    <string name="notification_channel_description">Alerts when your endpoints receive new submissions.</string>
 </resources>

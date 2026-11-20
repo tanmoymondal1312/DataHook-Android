@@ -2,7 +2,8 @@ package com.mediaghor.datahook.ui.navigation
 
 object Routes {
     const val AUTH = "auth"
-    const val DASHBOARD = "dashboard" // home = cross-endpoint submission feed
+    const val MAIN = "main" // bottom-nav shell containing Feed / Endpoints / Settings
+    const val FEED = "feed" // cross-endpoint submission feed (was DASHBOARD)
     const val ENDPOINTS = "endpoints"
     const val CREATE_ENDPOINT = "create_endpoint"
     const val SETTINGS = "settings"

@@ -217,7 +217,14 @@ Screens: **Auth → Home (feed) → [Endpoints list, Create Endpoint, Settings] 
 
 ## 6. Status
 
-- **Frontend:** fully implemented; `./gradlew :app:assembleDebug` = BUILD SUCCESSFUL.
+- **Frontend:** fully implemented; `./gradlew :app:assembleDebug` = BUILD SUCCESSFUL
+  (verified with JDK 21 **and** Android Studio's JBR 25 as the launching JVM).
+  API-36 modernisation shipped in `versionCode 4` / `versionName 1.1`: toolchain
+  (Kotlin 2.4.21 · Gradle 8.14.4 · Compose BOM 2025.11.00 — capped there because
+  newer BOMs need compileSdk 37 + AGP 9.1), edge-to-edge/deprecation cleanups,
+  Submissions pull-to-refresh + retry, search clearing, notification-off status
+  card, manual update check, ingest-URL share, haptic copy feedback, and an
+  Appearance setting (System/Light/Dark + Material You dynamic color on 12+).
 - **Backend done:** original contract (§2) + `/stats/` (§3b) + FCM payload (§3c).
 - **Backend:** all of the above is implemented, including `GET /api/submissions/` (§3a)
   and `POST /api/auth/google/`, plus customisable notification
@@ -244,4 +251,16 @@ renders it as a flat white silhouette, colour is impossible).
 ./gradlew :app:installDebug      # install on device/emulator
 ```
 Requires: `app/google-services.json` (present, project `webhook-001`) and the backend live.
-Toolchain: AGP 8.7.3 · Gradle 8.11.1 · Kotlin 2.0.21 · Compose BOM 2024.12.01 · minSdk 26 · targetSdk 35.
+Toolchain: AGP 8.9.1 · Gradle 8.14.4 · Kotlin 2.4.21 · Compose BOM 2025.11.00 · minSdk 26 · targetSdk 36.
+
+> Compose BOM must stay ≤ **2025.11.00** (ui 1.9.x): BOMs from 2026.09+ ship
+> compose-ui 1.12.x, whose AAR metadata demands compileSdk 37 + AGP 9.1+.
+
+Build note: Android Studio 2026.2.2 bundles **JBR 25** (Java 25), which Gradle 8.x
+cannot run on: its embedded Kotlin DSL compiler dies with
+`IllegalArgumentException: 25.0.4` while compiling `build.gradle.kts` — a Gradle-side
+limitation, independent of this project's Kotlin/AGP versions (only Gradle 9.1+ runs
+on Java 25, and that would force an AGP 9 migration). `gradle.properties` therefore
+sets `org.gradle.java.home` to a local JDK 21, so the Gradle daemon always runs on
+21 and builds work with any launching JVM (Android Studio, `./gradlew`, CI). The
+path is machine-specific — update it when building on another machine.

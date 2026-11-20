@@ -44,7 +44,11 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            SettingsViewModel(app().container.authRepository)
+            SettingsViewModel(
+                app().container.authRepository,
+                app().container.updateController,
+                app().container.appPreferences,
+            )
         }
     }
 }

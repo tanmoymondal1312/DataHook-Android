@@ -26,6 +26,8 @@ data class ExportPayload(val fileName: String, val mimeType: String, val bytes: 
 
 data class SubmissionsState(
     val loading: Boolean = false,
+    /** Pull-to-refresh spinner; keeps the list on screen while it runs. */
+    val refreshing: Boolean = false,
     val loadingMore: Boolean = false,
     val items: List<Submission> = emptyList(),
     val error: String? = null,
@@ -288,15 +290,20 @@ class EndpointDetailViewModel(
         }
     }
 
-    fun refreshSubmissions() = loadSubmissions(reset = true)
+    /** Pull-to-refresh: top spinner only, list stays visible. */
+    fun refreshSubmissions() = loadSubmissions(reset = true, pull = true)
 
-    private fun loadSubmissions(reset: Boolean) {
+    /** Error-state retry: full-screen spinner (the list is empty anyway). */
+    fun retrySubmissions() = loadSubmissions(reset = true)
+
+    private fun loadSubmissions(reset: Boolean, pull: Boolean = false) {
         val current = _state.value.submissions
         val page = if (reset) 1 else current.page + 1
         _state.update {
             it.copy(
                 submissions = it.submissions.copy(
-                    loading = reset,
+                    loading = reset && !pull,
+                    refreshing = pull,
                     loadingMore = !reset,
                     error = null,
                 ),
@@ -310,6 +317,7 @@ class EndpointDetailViewModel(
                         it.copy(
                             submissions = it.submissions.copy(
                                 loading = false,
+                                refreshing = false,
                                 loadingMore = false,
                                 items = existing + pageData.results,
                                 page = page,
@@ -326,6 +334,7 @@ class EndpointDetailViewModel(
                         it.copy(
                             submissions = it.submissions.copy(
                                 loading = false,
+                                refreshing = false,
                                 loadingMore = false,
                                 error = e.message,
                                 loadedOnce = true,

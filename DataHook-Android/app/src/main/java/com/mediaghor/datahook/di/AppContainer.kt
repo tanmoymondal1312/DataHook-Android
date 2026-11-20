@@ -2,6 +2,7 @@ package com.mediaghor.datahook.di
 
 import android.content.Context
 import com.mediaghor.datahook.BuildConfig
+import com.mediaghor.datahook.data.local.AppPreferences
 import com.mediaghor.datahook.data.local.TokenManager
 import com.mediaghor.datahook.data.remote.ApiConfig
 import com.mediaghor.datahook.data.remote.AuthInterceptor
@@ -30,6 +31,7 @@ class AppContainer(context: Context) {
     private val appContext = context.applicationContext
 
     val tokenManager = TokenManager(appContext)
+    val appPreferences = AppPreferences(appContext)
 
     private val contentType = "application/json".toMediaType()
     private val converterFactory = ApiConfig.json.asConverterFactory(contentType)

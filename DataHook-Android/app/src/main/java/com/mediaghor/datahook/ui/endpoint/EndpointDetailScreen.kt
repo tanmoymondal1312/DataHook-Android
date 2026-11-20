@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,13 +34,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
@@ -60,6 +61,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -67,12 +69,15 @@ import com.mediaghor.datahook.data.remote.dto.EndpointDetail
 import com.mediaghor.datahook.data.remote.dto.EndpointStats
 import com.mediaghor.datahook.di.AppViewModelProvider
 import com.mediaghor.datahook.ui.common.CodeBlock
-import com.mediaghor.datahook.ui.common.MiniBarChart
 import com.mediaghor.datahook.ui.common.CopyableField
+import com.mediaghor.datahook.ui.common.DataHeaderThumbnail
+import com.mediaghor.datahook.ui.common.DestructiveButton
 import com.mediaghor.datahook.ui.common.EmptyState
 import com.mediaghor.datahook.ui.common.FullScreenLoading
 import com.mediaghor.datahook.ui.common.LocalSnackbarController
-import com.mediaghor.datahook.ui.common.rememberCopyAction
+import com.mediaghor.datahook.ui.common.PrimaryButton
+import com.mediaghor.datahook.ui.common.StatusChip
+import com.mediaghor.datahook.ui.common.ChipRole
 import com.mediaghor.datahook.util.Exporter
 
 private val TAB_TITLES = listOf("Overview", "Attributes", "Snippets", "Submissions")
@@ -90,11 +95,10 @@ fun EndpointDetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val copy = rememberCopyAction()
+    val copy = com.mediaghor.datahook.ui.common.rememberCopyAction()
     val snackbar = LocalSnackbarController.current
 
     var selectedTab by remember { mutableStateOf(initialTab.coerceIn(0, 3)) }
-    // Photo picker: read the chosen image's bytes + MIME type, then upload.
     val logoPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri ->
@@ -138,11 +142,14 @@ fun EndpointDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = state.detail?.name?.ifBlank { "Endpoint" } ?: "Endpoint",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Text(
+                            text = state.detail?.name?.ifBlank { "Endpoint" } ?: "Endpoint",
+                            style = MaterialTheme.typography.titleLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -176,11 +183,8 @@ fun EndpointDetailScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            TabRow(selectedTabIndex = selectedTab) {
+            PrimaryTabRow(selectedTabIndex = selectedTab) {
                 TAB_TITLES.forEachIndexed { index, title ->
-                    // Low-level Tab overload: the `text` slot forces 16.dp of
-                    // horizontal padding, which leaves the longer labels too
-                    // little room and wraps them onto a second line.
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
@@ -189,7 +193,7 @@ fun EndpointDetailScreen(
                         Text(
                             text = title,
                             modifier = Modifier.padding(horizontal = 4.dp),
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelLarge,
                             maxLines = 1,
                             softWrap = false,
                             overflow = TextOverflow.Ellipsis,
@@ -301,150 +305,212 @@ private fun OverviewTab(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp),
+            .padding(16.dp),
     ) {
         if (stats != null) {
             AnalyticsSection(stats)
-            Spacer(Modifier.height(24.dp))
-            HorizontalDivider()
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
         }
 
-        CopyableField(label = "INGEST URL", value = detail.ingestUrl, onCopy = onCopy)
-        Spacer(Modifier.height(16.dp))
-        CopyableField(label = "API KEY", value = detail.apiKey, onCopy = onCopy)
-
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = onRotateClick,
-            enabled = !rotating,
-            shape = RoundedCornerShape(12.dp),
-        ) {
-            if (rotating) {
-                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-            } else {
-                Icon(Icons.Outlined.Autorenew, contentDescription = null, modifier = Modifier.size(18.dp))
-            }
-            Spacer(Modifier.width(8.dp))
-            Text("Rotate API key")
-        }
-
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(Modifier.height(12.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text("Push notifications", style = MaterialTheme.typography.titleMedium)
+        SectionCard {
+            Column {
                 Text(
-                    "Get a notification for every new submission.",
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = "Ingest URL",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(8.dp))
+                val ctx = androidx.compose.ui.platform.LocalContext.current
+                CopyableField(
+                    label = "URL",
+                    value = detail.ingestUrl,
+                    onCopy = onCopy,
+                    onShare = {
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, detail.ingestUrl)
+                        }
+                        ctx.startActivity(Intent.createChooser(shareIntent, "Share ingest URL"))
+                    },
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "POST JSON or form data to this URL",
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Spacer(Modifier.width(12.dp))
-            Switch(
-                checked = detail.notifyOnSubmit,
-                onCheckedChange = onNotifyChange,
-                enabled = !notifyUpdating,
-            )
+        }
+        Spacer(Modifier.height(16.dp))
+
+        SectionCard {
+            Column {
+                Text(
+                    text = "API Key",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(8.dp))
+                CopyableField(
+                    label = "Key",
+                    value = detail.apiKey,
+                    onCopy = onCopy,
+                    mask = true,
+                )
+                Spacer(Modifier.height(8.dp))
+                PrimaryButton(
+                    text = "Rotate API Key",
+                    onClick = onRotateClick,
+                    loading = rotating,
+                    icon = Icons.Outlined.Autorenew,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Keep this key secret. Anyone with this key can submit data.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Spacer(Modifier.height(20.dp))
+
+        SectionCard {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = "Push notifications",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = "Receive a notification for every new submission.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = detail.notifyOnSubmit,
+                        onCheckedChange = onNotifyChange,
+                        enabled = !notifyUpdating,
+                    )
+                }
+            }
         }
 
-        // Only meaningful while notifications are on.
         if (detail.notifyOnSubmit) {
             Spacer(Modifier.height(16.dp))
-            NotificationTitleField(
-                value = detail.notifyTitle,
-                defaultTitle = "New submission · ${detail.name}",
-                saving = notifyTitleSaving,
-                onSave = onNotifyTitleSave,
-            )
-
-            Spacer(Modifier.height(20.dp))
-            NotificationLogoField(
-                logoUrl = detail.notifyLogoUrl,
-                saving = logoSaving,
-                onPick = onLogoPick,
-                onRemove = onLogoRemove,
-            )
+            SectionCard {
+                Column {
+                    Text(
+                        text = "Notification title",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    NotificationTitleField(
+                        value = detail.notifyTitle,
+                        defaultTitle = "New submission · ${detail.name}",
+                        saving = notifyTitleSaving,
+                        onSave = onNotifyTitleSave,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    NotificationLogoField(
+                        logoUrl = detail.notifyLogoUrl,
+                        saving = logoSaving,
+                        onPick = onLogoPick,
+                        onRemove = onLogoRemove,
+                    )
+                }
+            }
         }
 
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(Modifier.height(12.dp))
-
-        TextButton(
+        Spacer(Modifier.height(20.dp))
+        DestructiveButton(
+            text = "Delete endpoint",
             onClick = onDeleteClick,
-            colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
-                contentColor = MaterialTheme.colorScheme.error,
-            ),
-        ) {
-            Icon(Icons.Outlined.DeleteOutline, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Delete endpoint")
-        }
+            modifier = Modifier.fillMaxWidth(),
+            filled = true,
+        )
     }
+}
+
+@Composable
+private fun SectionCard(content: @Composable () -> Unit) {
+    com.mediaghor.datahook.ui.common.DataHookCard(
+        modifier = Modifier.fillMaxWidth(),
+        content = content,
+    )
 }
 
 @Composable
 private fun AnalyticsSection(stats: EndpointStats) {
-    Text("Activity", style = MaterialTheme.typography.titleMedium)
-    Spacer(Modifier.height(12.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        StatTile(Modifier.weight(1f), stats.total, "Total")
-        StatTile(Modifier.weight(1f), stats.today, "Today")
-        StatTile(Modifier.weight(1f), stats.last7Days, "7 days")
-    }
-    if (stats.daily.isNotEmpty()) {
-        Spacer(Modifier.height(14.dp))
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Text(
-                    "Last ${stats.daily.size} days",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(12.dp))
-                MiniBarChart(
-                    values = stats.daily.map { it.count },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(88.dp),
-                )
+    Column {
+        Text(
+            text = "Activity",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+            StatCard(
+                value = stats.total.toString(),
+                label = "Total",
+                icon = Icons.Outlined.Inbox,
+            )
+            StatCard(
+                value = stats.today.toString(),
+                label = "Today",
+                icon = Icons.Outlined.Inbox,
+            )
+            StatCard(
+                value = stats.last7Days.toString(),
+                label = "7 days",
+                icon = Icons.Outlined.Inbox,
+            )
+        }
+        if (stats.daily.isNotEmpty()) {
+            Spacer(Modifier.height(20.dp))
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Last ${stats.daily.size} days",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    com.mediaghor.datahook.ui.common.MiniBarChart(
+                        values = stats.daily.map { it.count },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(88.dp),
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun StatTile(modifier: Modifier, value: Int, label: String) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = modifier,
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            Text(value.toString(), style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(2.dp))
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+private fun StatCard(
+    value: String,
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+) {
+    com.mediaghor.datahook.ui.common.StatCard(
+        value = value,
+        label = label,
+        icon = icon,
+    )
 }
 
 /**
  * Notification logo: preview, replace and remove.
- *
- * The logo becomes the notification's *large* icon — Android will not let a
- * server-supplied image be the small status-bar icon, so that stays the app's
- * built-in drawable.
  */
 @Composable
 private fun NotificationLogoField(
@@ -453,66 +519,68 @@ private fun NotificationLogoField(
     onPick: () -> Unit,
     onRemove: () -> Unit,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (logoUrl.isNotBlank()) {
-                AsyncImage(
-                    model = logoUrl,
-                    contentDescription = "Notification logo",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                Icon(
-                    Icons.Outlined.Image,
-                    contentDescription = null,
-                    modifier = Modifier.size(22.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-
-        Spacer(Modifier.width(16.dp))
-        Column(Modifier.weight(1f)) {
-            Text("Notification logo", style = MaterialTheme.typography.titleMedium)
-            Text(
-                if (logoUrl.isBlank()) {
-                    "Optional. Shown beside the notification text."
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (logoUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = logoUrl,
+                        contentDescription = "Notification logo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 } else {
-                    "Shown beside the notification text."
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+                    Icon(
+                        Icons.Outlined.Image,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
 
-    Spacer(Modifier.height(8.dp))
-    Row {
-        OutlinedButton(onClick = onPick, enabled = !saving) {
-            if (saving) {
-                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-            } else {
-                Text(if (logoUrl.isBlank()) "Upload logo" else "Replace")
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Notification logo", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (logoUrl.isBlank()) {
+                        "Optional. Shown beside the notification text."
+                    } else {
+                        "Shown beside the notification text."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
-        if (logoUrl.isNotBlank()) {
-            Spacer(Modifier.width(8.dp))
-            TextButton(onClick = onRemove, enabled = !saving) { Text("Remove") }
+
+        Spacer(Modifier.height(8.dp))
+        Row {
+            PrimaryButton(
+                text = if (logoUrl.isBlank()) "Upload logo" else "Replace",
+                onClick = onPick,
+                enabled = !saving,
+                loading = saving,
+            )
+            if (logoUrl.isNotBlank()) {
+                Spacer(Modifier.width(8.dp))
+                TextActionButton(
+                    text = "Remove",
+                    onClick = onRemove,
+                )
+            }
         }
     }
 }
 
 /**
- * Editor for the endpoint's custom notification title. Saving is explicit —
- * the button only appears once the text differs from what the server holds,
- * so there is no per-keystroke PATCH. Clearing the field restores the default.
+ * Editor for the endpoint's custom notification title.
  */
 @Composable
 private fun NotificationTitleField(
@@ -521,26 +589,23 @@ private fun NotificationTitleField(
     saving: Boolean,
     onSave: (String) -> Unit,
 ) {
-    // Re-seed the field whenever the server value changes (e.g. after a save).
-    var draft by remember(value) { mutableStateOf(value) }
+    var draft by remember { mutableStateOf(value) }
     val dirty = draft.trim() != value.trim()
 
     Column(Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = draft,
             onValueChange = { if (it.length <= NOTIFY_TITLE_MAX) draft = it },
-            label = { Text("Notification title") },
+            label = { Text("Title") },
             placeholder = { Text(defaultTitle) },
             singleLine = true,
             enabled = !saving,
             supportingText = {
-                Text(
-                    if (draft.isBlank()) {
-                        "Leave empty to use \"$defaultTitle\""
-                    } else {
-                        "${draft.length}/$NOTIFY_TITLE_MAX"
-                    },
-                )
+                if (draft.isBlank()) {
+                    Text("Leave empty to use \"$defaultTitle\"")
+                } else {
+                    Text("${draft.length}/$NOTIFY_TITLE_MAX")
+                }
             },
             modifier = Modifier.fillMaxWidth(),
         )
@@ -548,11 +613,16 @@ private fun NotificationTitleField(
         if (dirty) {
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = { draft = value }, enabled = !saving) {
-                    Text("Cancel")
-                }
+                TextActionButton(
+                    text = "Cancel",
+                    onClick = { draft = value },
+                )
                 Spacer(Modifier.width(8.dp))
-                OutlinedButton(onClick = { onSave(draft) }, enabled = !saving) {
+                OutlinedButton(
+                    onClick = { onSave(draft) },
+                    enabled = !saving,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
                     if (saving) {
                         CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
@@ -562,6 +632,18 @@ private fun NotificationTitleField(
             }
         }
     }
+}
+
+/** Text action button. */
+@Composable
+private fun TextActionButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    com.mediaghor.datahook.ui.common.TextActionButton(
+        text = text,
+        onClick = onClick,
+    )
 }
 
 @Composable
@@ -581,27 +663,61 @@ private fun SnippetsTab(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp),
+            .padding(16.dp),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            snippets.forEachIndexed { index, (label, _) ->
-                FilterChip(
-                    selected = selected == index,
-                    onClick = { selected = index },
-                    label = { Text(label) },
+        SectionCard {
+            Column {
+                Text(
+                    text = "Code snippets",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Copy and paste into your site or app to start sending data.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(16.dp))
+                Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                    snippets.forEachIndexed { index, (label, _) ->
+                        com.mediaghor.datahook.ui.common.StatusChip(
+                            text = label,
+                            role = if (selected == index) com.mediaghor.datahook.ui.common.ChipRole.Primary else com.mediaghor.datahook.ui.common.ChipRole.Secondary,
+                            modifier = Modifier
+                                .clickable { selected = index },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                com.mediaghor.datahook.ui.common.CodeBlock(
+                    code = code.ifBlank { "// No snippet available" },
+                    onCopy = { onCopy(code) },
+                )
+                Spacer(Modifier.height(12.dp))
+                PrimaryButton(
+                    text = "Copy ${snippets[selected].first}",
+                    onClick = { onCopy(code) },
+                    enabled = code.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
-        CodeBlock(code = code.ifBlank { "// No snippet available" })
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = { onCopy(code) },
-            enabled = code.isNotBlank(),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Copy ${snippets[selected].first}")
+        SectionCard {
+            Column {
+                Text(
+                    text = "Important",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "API key is not included in public HTML forms. Use a secure backend proxy when authentication is required.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

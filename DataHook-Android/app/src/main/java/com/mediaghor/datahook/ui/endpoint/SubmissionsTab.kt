@@ -1,9 +1,7 @@
 package com.mediaghor.datahook.ui.endpoint
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,17 +17,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -50,6 +53,7 @@ import com.mediaghor.datahook.ui.common.ErrorBanner
 import com.mediaghor.datahook.ui.common.FullScreenLoading
 import com.mediaghor.datahook.util.formatTimestamp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubmissionsTab(
     state: EndpointDetailUiState,
@@ -60,7 +64,6 @@ fun SubmissionsTab(
     val subs = state.submissions
     val listState = rememberLazyListState()
 
-    // Trigger pagination when the last item becomes visible.
     val shouldLoadMore by remember {
         derivedStateOf {
             val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -78,21 +81,32 @@ fun SubmissionsTab(
             onValueChange = viewModel::onSearchChange,
             label = { Text("Search submissions") },
             singleLine = true,
+            trailingIcon = {
+                if (subs.search.isNotEmpty()) {
+                    IconButton(onClick = { viewModel.onSearchChange("") }) {
+                        Icon(Icons.Outlined.Close, contentDescription = "Clear search")
+                    }
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
         )
 
-        Box(Modifier.fillMaxSize()) {
+        PullToRefreshBox(
+            isRefreshing = subs.refreshing,
+            onRefresh = viewModel::refreshSubmissions,
+            modifier = Modifier.fillMaxSize(),
+        ) {
             when {
                 subs.loading -> FullScreenLoading()
 
                 subs.items.isEmpty() && subs.error != null -> EmptyState(
                     icon = Icons.Outlined.Inbox,
                     title = "Couldn't load submissions",
-                    subtitle = subs.error,
+                    subtitle = subs.error!!,
                     actionLabel = "Retry",
-                    onAction = viewModel::refreshSubmissions,
+                    onAction = viewModel::retrySubmissions,
                 )
 
                 subs.items.isEmpty() && subs.search.isNotBlank() -> EmptyState(
@@ -123,7 +137,11 @@ fun SubmissionsTab(
                     }
                     if (subs.loadingMore) {
                         item(key = "loading_more") {
-                            Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
                                 CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
                             }
                         }
@@ -134,7 +152,6 @@ fun SubmissionsTab(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SubmissionCard(
     submission: Submission,
@@ -146,40 +163,50 @@ private fun SubmissionCard(
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = onOpen,
-                onLongClick = { confirmDelete = true },
-            ),
+            .clickable(onClick = onOpen),
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                DataHeaderThumbnail(submission.headerImage)
+                DataHeaderThumbnail(submission.headerImage, size = 36)
                 if (submission.headerImage.isNotBlank()) Spacer(Modifier.width(10.dp))
-                Text(
-                    text = formatTimestamp(submission.createdAt),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = formatTimestamp(submission.createdAt),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+                IconButton(onClick = { confirmDelete = true }) {
+                    Icon(
+                        Icons.Outlined.DeleteOutline,
+                        contentDescription = "Delete",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(14.dp))
 
             if (submission.data.isEmpty()) {
                 Text(
-                    "(empty payload)",
+                    text = "(empty payload)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
-                submission.data.forEach { (key, value) ->
-                    Row(Modifier.padding(vertical = 3.dp)) {
+                val entries = submission.data.entries.toList()
+                entries.take(3).forEach { (key, value) ->
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
                         Text(
                             text = key,
-                            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontFamily = FontFamily.Monospace,
+                            ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.width(120.dp),
+                            modifier = Modifier.width(100.dp),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -188,15 +215,18 @@ private fun SubmissionCard(
                             text = value.displayValue(),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
-                Spacer(Modifier.height(6.dp))
-                TextButton(
-                    onClick = { onCopy(submission.data.entries.joinToString("\n") { "${it.key}: ${it.value.displayValue()}" }) },
-                    contentPadding = PaddingValues(horizontal = 4.dp),
-                ) {
-                    Text("Copy", style = MaterialTheme.typography.labelSmall)
+                if (entries.size > 3) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "+${entries.size - 3} more fields",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         }

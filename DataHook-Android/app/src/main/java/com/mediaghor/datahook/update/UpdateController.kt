@@ -54,6 +54,27 @@ class UpdateController(
     }
 
     /**
+     * Manual re-check from Settings: refreshes the prompt state (the dialog
+     * rendered from [state] reacts automatically) and reports the outcome so
+     * the caller can show it in a snackbar. Safe to call repeatedly.
+     */
+    fun recheck(onResult: (String) -> Unit) {
+        scope.launch {
+            val config = repository.fetch().getOrNull()
+            if (config == null) {
+                onResult("Couldn't reach the update service. Try again later.")
+                return@launch
+            }
+            val prompt = decideUpdate(config, currentVersionCode)
+            _state.value = prompt
+            onResult(
+                if (prompt != null) "Update available — opening the download dialog"
+                else "You're on the latest version",
+            )
+        }
+    }
+
+    /**
      * Opens the Play Store listing. Uses the backend-provided URL; when that
      * is missing or nothing can handle it, falls back to the Play Store app
      * (`market://`) and finally the Play Store web page in the browser.

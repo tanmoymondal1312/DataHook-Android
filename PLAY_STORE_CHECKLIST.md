@@ -112,10 +112,12 @@ user** while still working on your debug builds — an easy thing to miss.
 
 ### 4b. Build the release artifact
 
-`app/build.gradle.kts` has no `signingConfig` for the release build type, so use
-Android Studio → *Build → Generate Signed App Bundle*, creating an upload
-keystore if you don't have one. Keep that keystore and its passwords safe and
-backed up — losing it means you can't ship updates from the same listing.
+`app/build.gradle.kts` signs the release build from `keystore.properties` at the
+project root (never committed) when that file exists; without it the bundle is
+unsigned. No keystore yet? Use Android Studio → *Build → Generate Signed App
+Bundle* to create one and fill in that file. Keep that keystore and its
+passwords safe and backed up — losing it means you can't ship updates from the
+same listing.
 
 `isMinifyEnabled` is currently `false`. That is fine to ship; if you turn it on
 later, test the release build end-to-end first, because kotlinx-serialization
@@ -123,7 +125,7 @@ DTOs need keep rules.
 
 ### 4c. Version for release
 
-`versionCode = 1`, `versionName = "1.0"`. Bump `versionCode` for every upload.
+`versionCode = 4`, `versionName = "1.1"`. Bump `versionCode` for every upload.
 
 ---
 
