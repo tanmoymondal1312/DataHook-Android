@@ -289,7 +289,7 @@ private fun FeedCard(
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
-                if (item.headerImage.isNotBlank()) Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = item.endpointName.ifBlank { "Endpoint" },

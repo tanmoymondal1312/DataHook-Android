@@ -46,6 +46,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.LaunchedEffect
@@ -183,6 +184,12 @@ fun SettingsScreen(
                                     index = index,
                                     count = modes.size,
                                 ),
+                                colors = SegmentedButtonDefaults.colors(
+                                    activeContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                    activeContentColor = MaterialTheme.colorScheme.primary,
+                                    inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                                    inactiveContentColor = MaterialTheme.colorScheme.onSurface,
+                                ),
                             ) {
                                 Text(modeLabel)
                             }
@@ -209,6 +216,14 @@ fun SettingsScreen(
                             Switch(
                                 checked = state.dynamicColor,
                                 onCheckedChange = viewModel::setDynamicColor,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                                    checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    uncheckedBorderColor = MaterialTheme.colorScheme.outline,
+                                ),
                             )
                         }
                     }
@@ -249,19 +264,23 @@ fun SettingsScreen(
                     ) {
                         Text(
                             text = "Privacy Policy",
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
                         )
-                        Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "datahook.mediaghor.com/privacy/",
+                            text = "View policy",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                                textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
                             ),
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable {
-                                uriHandler.openUri("https://datahook.mediaghor.com/privacy/")
-                            },
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    uriHandler.openUri("https://datahook.mediaghor.com/privacy/")
+                                }
+                                .padding(horizontal = 8.dp, vertical = 6.dp),
                         )
                     }
                     Spacer(Modifier.height(16.dp))
