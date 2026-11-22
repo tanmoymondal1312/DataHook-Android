@@ -76,6 +76,18 @@ fun DataHookRoot(
 
     val loggedIn by authRepository.isLoggedIn.collectAsStateWithLifecycle(initialValue = null)
 
+    // Register the FCM token whenever we hold a session. Login alone is not
+    // enough: on a cold start `fetchFcmToken()` can come back null while Firebase
+    // is still initialising, which left the device unregistered and the user with
+    // no push notifications.
+    androidx.compose.runtime.LaunchedEffect(loggedIn) {
+        if (loggedIn == true) {
+            val fcmToken = com.mediaghor.datahook.util.fetchFcmToken()
+                ?: return@LaunchedEffect
+            authRepository.registerDevice(fcmToken)
+        }
+    }
+
     CompositionLocalProvider(LocalSnackbarController provides snackbarController) {
         Box(Modifier.fillMaxSize()) {
             when (val isLoggedIn = loggedIn) {
