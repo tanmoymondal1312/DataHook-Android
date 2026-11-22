@@ -103,11 +103,6 @@ fun EndpointsScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = onCreateEndpoint) {
-                        Icon(Icons.Outlined.Add, contentDescription = "Create endpoint")
-                    }
-                },
             )
         },
         floatingActionButton = {
@@ -130,19 +125,6 @@ fun EndpointsScreen(
                     .padding(horizontal = 16.dp)
                     .padding(top = 8.dp),
             ) {
-                Text(
-                    text = "Endpoints",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "Manage your data collection points",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(16.dp))
-
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },

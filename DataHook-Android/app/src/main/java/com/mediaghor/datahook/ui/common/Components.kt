@@ -296,7 +296,7 @@ fun StatCard(
         modifier = modifier.fillMaxWidth(),
         shape = ShapeCard,
         colors = CardDefaults.cardColors(
-            containerColor = dh_secondarySurfaceLight,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ),
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -464,7 +464,7 @@ fun CopyableField(
         )
         Spacer(Modifier.height(6.dp))
         Surface(
-            color = dh_secondarySurfaceLight,
+            color = MaterialTheme.colorScheme.surfaceVariant,
             shape = ShapeInput,
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -509,7 +509,7 @@ fun CodeBlock(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = dh_secondarySurfaceLight,
+        color = MaterialTheme.colorScheme.surfaceVariant,
         shape = ShapeInput,
     ) {
         Column(Modifier.fillMaxWidth()) {

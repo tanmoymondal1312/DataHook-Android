@@ -85,6 +85,11 @@ fun HomeScreen(
     var menuOpen by remember { mutableStateOf(false) }
     var searchOpen by remember { mutableStateOf(false) }
 
+    // The empty state carries the create CTA; the FAB is hidden at the same time so
+    // the screen never offers two identical actions.
+    val showCreateCta = state.items.isEmpty() && state.search.isBlank() &&
+        state.error == null && !state.initialLoading
+
     var firstResume by remember { mutableStateOf(true) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         if (firstResume) firstResume = false else viewModel.load()
@@ -141,14 +146,9 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End) {
-                SmallFloatingActionButton(
-                    onClick = onOpenEndpoints,
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                ) {
-                    Icon(Icons.Outlined.Inbox, contentDescription = "Endpoints")
-                }
-                Spacer(Modifier.height(12.dp))
+            // Exactly one create affordance at a time: the empty state carries the
+            // "Create Endpoint" CTA when there is nothing to show yet.
+            if (!showCreateCta) {
                 ExtendedFloatingActionButton(
                     onClick = onCreateEndpoint,
                     containerColor = MaterialTheme.colorScheme.primary,

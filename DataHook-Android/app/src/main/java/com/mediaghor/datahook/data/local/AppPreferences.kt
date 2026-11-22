@@ -37,7 +37,7 @@ class AppPreferences(private val context: Context) {
      * stored value is simply unused on older devices.
      */
     val dynamicColor: Flow<Boolean> =
-        context.appDataStore.data.map { it[Keys.DYNAMIC_COLOR] ?: true }
+        context.appDataStore.data.map { it[Keys.DYNAMIC_COLOR] ?: false }
 
     suspend fun setThemeMode(mode: Int) {
         context.appDataStore.edit { it[Keys.THEME_MODE] = mode }

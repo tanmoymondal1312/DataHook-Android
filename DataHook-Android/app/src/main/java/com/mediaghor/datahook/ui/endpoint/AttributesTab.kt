@@ -90,13 +90,13 @@ fun AttributesTab(
                 subtitle = "Define the typed fields your endpoint should accept, e.g. name, email, phone.",
                 actionLabel = "Add attribute",
                 onAction = { editing = null; showSheet = true },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.weight(1f),
             )
         } else {
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.weight(1f),
             ) {
                 items(state.attributes, key = { it.id }) { attr ->
                     AttributeRow(
@@ -105,7 +105,6 @@ fun AttributesTab(
                         onDelete = { viewModel.deleteAttribute(attr) },
                     )
                 }
-                item { Spacer(Modifier.height(80.dp)) }
             }
         }
 

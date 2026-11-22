@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -110,6 +113,7 @@ fun SettingsScreen(
             Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(20.dp),
         ) {
             // Account section
@@ -238,6 +242,7 @@ fun SettingsScreen(
                         )
                     }
                     Spacer(Modifier.height(16.dp))
+                    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -254,6 +259,9 @@ fun SettingsScreen(
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                             ),
                             color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable {
+                                uriHandler.openUri("https://datahook.mediaghor.com/privacy/")
+                            },
                         )
                     }
                     Spacer(Modifier.height(16.dp))

@@ -17,7 +17,7 @@ data class SettingsUiState(
     val checkingUpdates: Boolean = false,
     /** Appearance — mirrors [AppPreferences] (MODE_SYSTEM / LIGHT / DARK). */
     val themeMode: Int = AppPreferences.MODE_SYSTEM,
-    val dynamicColor: Boolean = true,
+    val dynamicColor: Boolean = false,
     val error: String? = null,
     /** One-shot info message (e.g. update-check result) for the snackbar. */
     val info: String? = null,
